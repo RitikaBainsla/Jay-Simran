@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0710">
+<title>Wedding Invitation</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#0b0710;color:#fff;font-family:Georgia,"Times New Roman",serif}
+body{overflow-x:hidden}
+#opening{position:fixed;inset:0;z-index:100;background:#0b0710;display:flex;align-items:center;justify-content:center;cursor:default;touch-action:manipulation;transition:opacity .65s ease,visibility .65s ease}
+#opening.hidden{opacity:0;visibility:hidden;pointer-events:none}
+#opening video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+
+.watermark-overlay{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:190;pointer-events:none;user-select:none;opacity:1}
+#musicButton{position:fixed;right:18px;top:18px;z-index:220;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.3);color:#fff;backdrop-filter:blur(6px);cursor:pointer;font-size:17px;display:none}
+#musicButton.show{display:block}
+#invite{width:100%;scroll-snap-type:y mandatory}
+section{position:relative;width:100%;height:100svh;min-height:620px;display:flex;align-items:center;justify-content:center;overflow:hidden;scroll-snap-align:start;background:#0b0710}
+.video-wrap{position:relative;width:100%;height:100%;display:flex;justify-content:center;background:#0b0710}
+.invite-video{width:100%;height:100%;object-fit:cover;display:block;background:#0b0710}
+.sound{position:absolute;right:18px;bottom:20px;z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.28);color:#fff;backdrop-filter:blur(5px);cursor:pointer;font-size:16px}
+#scratch-section{height:auto;min-height:100svh;padding:44px 18px 54px;display:flex;align-items:center;justify-content:flex-start;background:#f8f5e9;color:#3e3a35;scroll-snap-align:start}
+.scratch-wrap{width:min(100%,760px);text-align:center}
+.scratch-heading{margin:0 0 25px;color:#b49342;font-size:clamp(28px,5.8vw,52px);font-weight:400}
+.scratch-names{margin:0 0 30px;color:#b49342;font-size:clamp(50px,10vw,92px);line-height:.95;font-family:"Snell Roundhand","Segoe Script","Brush Script MT",cursive;font-weight:500}
+.scratch-card{
+  position:relative;width:100%;height:178px;border-radius:27px;overflow:hidden;
+  background:
+    radial-gradient(circle at 20% 25%,rgba(255,239,154,.34),transparent 22%),
+    radial-gradient(circle at 78% 70%,rgba(255,246,190,.22),transparent 25%),
+    linear-gradient(110deg,#c88b13 0%,#f4c44c 28%,#d99a1d 52%,#f0bd3d 78%,#b87908 100%);
+  box-shadow:0 12px 28px rgba(117,78,7,.25),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 8px rgba(105,67,0,.2);
+  border:2px solid #d6a431;touch-action:none
+}
+.scratch-message{position:absolute;inset:0;display:flex;transition:opacity .2s ease;align-items:center;justify-content:center;padding:20px;color:#fff;font-size:clamp(22px,4.8vw,42px);font-family:Georgia,"Times New Roman",serif;z-index:1;pointer-events:none}
+#scratchCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;cursor:crosshair}
+.scratch-reveal{position:absolute;inset:0;z-index:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(105deg,#fff2bf,#f7d97d,#fff0b6);color:#8c5e0a}
+.reveal-small{font:15px Georgia,serif;letter-spacing:5px;margin-bottom:10px}
+.reveal-date{font-size:clamp(30px,6vw,52px);font-weight:500}
+.scratch-date{margin:27px 0 18px;color:#4c4850;font-family:Georgia,"Times New Roman",serif;font-size:clamp(25px,5vw,44px)}
+.caricature{display:block;width:min(92vw,560px);height:auto;margin:0 auto 8px;mix-blend-mode:multiply;filter:saturate(.98);object-fit:contain}
+.countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:710px;margin:0 auto}
+.time-box{min-height:145px;border:5px solid #e7b51a;border-radius:27px;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;box-shadow:0 8px 16px rgba(90,70,20,.1)}
+.time-number{color:#cf4382;font-size:clamp(42px,8vw,74px);line-height:1}
+.time-label{color:#4d4a51;font-size:clamp(16px,3vw,27px);margin-top:14px}
+#map-section{min-height:100svh;height:auto;padding:30px 18px 42px;display:flex;flex-direction:column;gap:18px;background:linear-gradient(180deg,#120b18,#08060b);scroll-snap-align:start}
+.map-title{text-align:center}.map-title h2{margin:0 0 7px;font-size:28px;font-weight:500}.map-title p{margin:0;opacity:.75;font:13px/1.5 Arial,sans-serif}
+.map-frame{width:100%;max-width:900px;height:58vh;min-height:360px;border:0;border-radius:18px;display:block;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.directions{display:inline-flex;align-items:center;justify-content:center;padding:13px 20px;border-radius:999px;text-decoration:none;color:#fff;border:1px solid rgba(255,255,255,.45);font:13px Arial,sans-serif;letter-spacing:.5px;max-width:330px;width:100%;margin:0 auto}
+@media(min-width:700px){.invite-video{width:min(100%,540px)}}
+@media(max-width:520px){.scratch-card{height:145px}.countdown{gap:7px}.time-box{min-height:112px;border-width:4px;border-radius:20px}.time-label{margin-top:8px}}
+</style>
+</head>
+<body>
+<img class="watermark-overlay" src="watermark.png" alt="" aria-hidden="true">
+
+<audio id="weddingMusic" loop preload="auto">
+  <source src="videos/wedding-song.mp4" type="audio/mp4">
+</audio>
+
+<!-- Opening slide automatically advances to the final front slide -->
+<div id="opening" aria-label="Open wedding invitation" role="button" tabindex="0">
+  <video id="openingVideo" playsinline preload="auto">
+    <source src="videos/opening.mp4" type="video/mp4">
+  </video>
+</div>
+
+<button id="musicButton" aria-label="Toggle wedding music">🔊</button>
+
+<div id="invite">
+
+  <!-- 1. FINAL FRONT SLIDE -->
+  <section id="front">
+    <div class="video-wrap">
+      <video class="invite-video" id="frontVideo" playsinline preload="auto" muted>
+        <source src="videos/front.mp4" type="video/mp4">
+      </video>
+      <button class="sound" data-target="frontVideo" aria-label="Toggle slide sound">🔇</button>
+    </div>
+  </section>
+
+  <!-- 2. ONE AND ONLY SCRATCH CARD -->
+  <section id="scratch-section">
+    <div class="scratch-wrap">
+      <h2 class="scratch-heading">With immense joy and love</h2>
+      <div class="scratch-names">Jay &amp; Simran</div>
+
+      <div class="scratch-card" id="scratchCard" aria-label="Scratch to reveal the wedding date">
+        <div class="scratch-reveal">
+          <div class="reveal-small">SAVE THE DATE</div>
+          <div class="reveal-date">15th November 2026</div>
+        </div>
+        <div class="scratch-message">Scratch to reveal</div>
+        <canvas id="scratchCanvas"></canvas>
+      </div>
+<img class="caricature" src="caricature.png" alt="Jay and Simran illustration">
+
+      <div class="countdown">
+        <div class="time-box"><div class="time-number" id="days">00</div><div class="time-label">Days</div></div>
+        <div class="time-box"><div class="time-number" id="hours">00</div><div class="time-label">Hours</div></div>
+        <div class="time-box"><div class="time-number" id="minutes">00</div><div class="time-label">Minutes</div></div>
+        <div class="time-box"><div class="time-number" id="seconds">00</div><div class="time-label">Seconds</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. FINAL WEDDING -->
+  <section id="wedding">
+    <div class="video-wrap">
+      <video class="invite-video" id="weddingVideo" playsinline preload="auto" muted>
+        <source src="videos/wedding.mp4" type="video/mp4">
+      </video>
+      <button class="sound" data-target="weddingVideo" aria-label="Toggle slide sound">🔇</button>
+    </div>
+  </section>
+
+  <!-- 4. RECEPTION -->
+  <section id="reception">
+    <div class="video-wrap">
+      <video class="invite-video" id="receptionVideo" playsinline preload="auto" muted>
+        <source src="videos/reception.mp4" type="video/mp4">
+      </video>
+      <button class="sound" data-target="receptionVideo" aria-label="Toggle slide sound">🔇</button>
+    </div>
+  </section>
+
+  <!-- 5. RSVP -->
+  <section id="rsvp">
+    <div class="video-wrap">
+      <video class="invite-video" id="rsvpVideo" playsinline preload="auto" muted>
+        <source src="videos/rsvp.mp4" type="video/mp4">
+      </video>
+      <button class="sound" data-target="rsvpVideo" aria-label="Toggle slide sound">🔇</button>
+    </div>
+  </section>
+
+  <!-- 6. GOOGLE MAP -->
+  <section id="map-section">
+    <div class="map-title">
+      <h2>Venue</h2>
+      <p>4/2, Khandwa Rd, near New Rani Baag,<br>Shri Krishna Avenue, Limbodi, Indore,<br>Madhya Pradesh 452001</p>
+    </div>
+    <iframe class="map-frame" loading="lazy" allowfullscreen
+      referrerpolicy="no-referrer-when-downgrade"
+      src="https://www.google.com/maps?q=4%2F2%2C%20Khandwa%20Rd%2C%20near%20New%20Rani%20Baag%2C%20Shri%20Krishna%20Avenue%2C%20Limbodi%2C%20Indore%2C%20Madhya%20Pradesh%20452001&output=embed"></iframe>
+    <a class="directions" target="_blank" rel="noopener"
+      href="https://www.google.com/maps/dir/?api=1&destination=4%2F2%2C%20Khandwa%20Rd%2C%20near%20New%20Rani%20Baag%2C%20Shri%20Krishna%20Avenue%2C%20Limbodi%2C%20Indore%2C%20Madhya%20Pradesh%20452001">Open Google Maps &amp; Get Directions</a>
+  </section>
+
+</div>
+
+<script>
+const opening=document.getElementById('opening');
+const openingVideo=document.getElementById('openingVideo');
+const frontVideo=document.getElementById('frontVideo');
+const music=document.getElementById('weddingMusic');
+const musicButton=document.getElementById('musicButton');
+let opened=false;
+
+function showFront(){
+  if(opened)return;
+  opened=true;
+  opening.classList.add('hidden');
+  musicButton.classList.add('show');
+  document.getElementById('front').scrollIntoView({behavior:'auto',block:'start'});
+  frontVideo.play().catch(()=>{});
+  // Try the requested instrumental; browsers may require a later user gesture for audio.
+  music.volume=.75;
+  music.play().catch(()=>{});
+}
+
+function startOpening(){
+  openingVideo.muted=true;
+  openingVideo.currentTime=0;
+  const p=openingVideo.play();
+  if(p && p.catch) p.catch(()=>{});
+  openingVideo.addEventListener('ended',showFront,{once:true});
+  // Safety fallback so the invitation never gets stuck on the opening slide.
+  setTimeout(()=>{ if(!opened) showFront(); },7000);
+}
+
+window.addEventListener('load',startOpening);
+
+musicButton.addEventListener('click',e=>{
+  e.stopPropagation();
+  if(music.paused){music.play().catch(()=>{});musicButton.textContent='🔊';}
+  else{music.pause();musicButton.textContent='🔇';}
+});
+
+// Automatically play/pause each video as its section enters/leaves the screen.
+const videos=[...document.querySelectorAll('.invite-video')];
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    const v=entry.target;
+    if(entry.isIntersecting && entry.intersectionRatio>.65)v.play().catch(()=>{});
+    else v.pause();
+  });
+},{threshold:[.65]});
+videos.forEach(v=>observer.observe(v));
+
+// Individual video sound buttons.
+document.querySelectorAll('.sound').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const v=document.getElementById(btn.dataset.target);
+    v.muted=!v.muted;
+    btn.textContent=v.muted?'🔇':'🔊';
+    v.play().catch(()=>{});
+  });
+});
+
+// Scratch card — interactive foil with a hidden date reveal.
+const card=document.getElementById('scratchCard');
+const canvas=document.getElementById('scratchCanvas');
+const ctx=canvas.getContext('2d',{willReadFrequently:true});
+let scratching=false,revealed=false,lastX=null,lastY=null;
+
+function paintFoil(){
+  const r=card.getBoundingClientRect();
+  const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  canvas.width=Math.round(r.width*dpr);
+  canvas.height=Math.round(r.height*dpr);
+  canvas.style.width=r.width+'px';
+  canvas.style.height=r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const g=ctx.createLinearGradient(0,0,r.width,r.height);
+  g.addColorStop(0,'#b87808');
+  g.addColorStop(.18,'#e0a82d');
+  g.addColorStop(.38,'#f7d36a');
+  g.addColorStop(.55,'#d79a1b');
+  g.addColorStop(.74,'#f1c451');
+  g.addColorStop(1,'#ad7006');
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,r.width,r.height);
+  for(let i=0;i<900;i++){
+    ctx.fillStyle=`rgba(255,245,180,${0.06+Math.random()*0.16})`;
+    const size=.4+Math.random()*1.8;
+    ctx.fillRect(Math.random()*r.width,Math.random()*r.height,size,size);
+  }
+}
+paintFoil();
+window.addEventListener('resize',()=>{if(!revealed)paintFoil();});
+
+function erasePoint(clientX,clientY){
+  const instruction=document.querySelector('.scratch-message');
+  if(instruction) instruction.style.opacity='0';
+  const r=canvas.getBoundingClientRect();
+  const x=clientX-r.left,y=clientY-r.top;
+  ctx.save();
+  ctx.globalCompositeOperation='destination-out';
+  ctx.lineCap='round';
+  ctx.lineJoin='round';
+  ctx.lineWidth=58;
+  ctx.beginPath();
+  if(lastX!==null)ctx.moveTo(lastX,lastY);
+  ctx.lineTo(x,y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x,y,29,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+  lastX=x;lastY=y;
+  checkReveal();
+}
+function checkReveal(){
+  if(revealed)return;
+  const d=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  let transparent=0,samples=0;
+  for(let i=3;i<d.length;i+=64){
+    samples++;
+    if(d[i]<80)transparent++;
+  }
+  if(transparent/samples>.22){
+    revealed=true;
+    canvas.style.transition='opacity .35s ease';
+    canvas.style.opacity='0';
+    setTimeout(()=>canvas.style.display='none',380);
+  }
+}
+canvas.addEventListener('pointerdown',e=>{
+  e.preventDefault();scratching=true;lastX=null;lastY=null;
+  erasePoint(e.clientX,e.clientY);
+},{passive:false});
+canvas.addEventListener('pointermove',e=>{
+  if(!scratching)return;
+  e.preventDefault();erasePoint(e.clientX,e.clientY);
+},{passive:false});
+window.addEventListener('pointerup',()=>{scratching=false;lastX=null;lastY=null;});
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();const t=e.touches[0];
+  scratching=true;lastX=null;lastY=null;erasePoint(t.clientX,t.clientY);
+},{passive:false});
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();if(!scratching)return;
+  const t=e.touches[0];erasePoint(t.clientX,t.clientY);
+},{passive:false});
+canvas.addEventListener('touchend',()=>{scratching=false;lastX=null;lastY=null;});
+// Countdown to 15 November 2026.
+const target=new Date('2026-11-15T00:00:00');
+function countdown(){
+  let d=Math.max(0,target-new Date());
+  const days=Math.floor(d/86400000);d%=86400000;
+  const hours=Math.floor(d/3600000);d%=3600000;
+  const minutes=Math.floor(d/60000);d%=60000;
+  const seconds=Math.floor(d/1000);
+  document.getElementById('days').textContent=String(days).padStart(2,'0');
+  document.getElementById('hours').textContent=String(hours).padStart(2,'0');
+  document.getElementById('minutes').textContent=String(minutes).padStart(2,'0');
+  document.getElementById('seconds').textContent=String(seconds).padStart(2,'0');
+}
+countdown();setInterval(countdown,1000);
+</script>
+</body>
+</html>
