@@ -15,7 +15,6 @@ body{overflow-x:hidden}
 #opening .seal-logo{position:absolute;left:50%;top:49.3%;width:min(25vw,300px);height:auto;transform:translate(-50%,-50%) scale(.72);opacity:0;z-index:2;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(72,45,12,.3));animation:sealLogoReveal 1.05s cubic-bezier(.2,.75,.25,1) .22s forwards}
 @keyframes sealLogoReveal{0%{opacity:0;transform:translate(-50%,-50%) scale(.62)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 
-.watermark-overlay{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:190;pointer-events:none;user-select:none;opacity:1}
 #musicButton{position:fixed;right:18px;top:18px;z-index:220;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.3);color:#fff;backdrop-filter:blur(6px);cursor:pointer;font-size:17px;display:none}
 #musicButton.show{display:block}
 #invite{width:100%;scroll-snap-type:y mandatory}
@@ -23,6 +22,11 @@ section{position:relative;width:100%;height:100svh;min-height:620px;display:flex
 .video-wrap{position:relative;width:100%;height:100%;display:flex;justify-content:center;background:#0b0710}
 .invite-video{width:100%;height:100%;object-fit:cover;display:block;background:#0b0710}
 .sound{position:absolute;right:18px;bottom:20px;z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.28);color:#fff;backdrop-filter:blur(5px);cursor:pointer;font-size:16px}
+.scroll-down{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:6;display:flex;flex-direction:column;align-items:center;gap:6px;padding:9px 16px 10px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:rgba(0,0,0,.28);color:#fff;backdrop-filter:blur(5px);font:600 13px/1.1 Arial,sans-serif;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;text-decoration:none;animation:scrollHint 1.8s ease-in-out infinite}
+.scroll-down::after{content:"↓";font-size:22px;line-height:16px}
+@keyframes scrollHint{0%,100%{transform:translateX(-50%) translateY(0);opacity:.9}50%{transform:translateX(-50%) translateY(6px);opacity:1}}
+@media(max-width:520px){.scroll-down{bottom:18px;font-size:12px;padding:8px 14px 9px}.scroll-down::after{font-size:20px}}
+
 #scratch-section{height:auto;min-height:100svh;padding:34px 18px 44px;display:flex;align-items:center;justify-content:flex-start;background:#f8f5e9;color:#3e3a35;scroll-snap-align:start}
 .scratch-wrap{width:min(100%,760px);text-align:center;margin:0 auto}
 .scratch-heading{margin:0 0 18px;color:#b49342;font-size:clamp(28px,5.8vw,52px);font-weight:400}
@@ -60,8 +64,6 @@ section{position:relative;width:100%;height:100svh;min-height:620px;display:flex
 </style>
 </head>
 <body>
-<img class="watermark-overlay" src="watermark.png" alt="" aria-hidden="true">
-
 <audio id="weddingMusic" loop preload="auto">
   <source src="bol-na-halke-instrumental.mp4" type="audio/mp4">
 </audio>
@@ -84,6 +86,7 @@ section{position:relative;width:100%;height:100svh;min-height:620px;display:flex
         <source src="final-front-jay-simran.mp4" type="video/mp4">
       </video>
       <button class="sound" data-target="frontVideo" aria-label="Toggle slide sound">🔇</button>
+      <button class="scroll-down" id="scrollDown" type="button" aria-label="Scroll down to the invitation details">Scroll down</button>
     </div>
   </section>
 
@@ -204,6 +207,11 @@ openingVideo.addEventListener('ended',showFront,{once:true});
 openingVideo.addEventListener('error',()=>setTimeout(showFront,250),{once:true});
 
 frontVideo.addEventListener('error',()=>{document.getElementById('front').style.backgroundImage='url(\"front-poster.jpg\")';},{once:true});
+
+document.getElementById('scrollDown').addEventListener('click',e=>{
+  e.stopPropagation();
+  document.getElementById('scratch-section').scrollIntoView({behavior:'smooth',block:'start'});
+});
 
 musicButton.addEventListener('click',e=>{
   e.stopPropagation();
